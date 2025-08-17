@@ -107,7 +107,14 @@ push_images_to_harbor() {
         echo "Pushing image to Harbor: $DST"
 
         docker tag "$SRC" "$DST"
-        docker push "$DST"
+        if ! docker push "$DST"; then
+            echo "⚠️ Push failed for $DST. Retrying once..."
+            sleep 5
+        if ! docker push "$DST"; then
+            echo "❌ Failed to push $DST after retry. Skipping."
+        continue
+        fi
+        fi
     done < "$LOG_FILE"
 
     echo "✅ All images pushed to Harbor!"
@@ -118,4 +125,4 @@ push_images_to_harbor() {
 # ==============================
 
 prepare_images_local
-push_images_to_harbor   # Uncomment when ready to push to Harbor
+push_images_to_harbor
